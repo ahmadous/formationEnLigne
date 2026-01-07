@@ -10,13 +10,15 @@ class Course extends Model
 {
     use HasFactory;
 
-    protected $fillable=['title','description'];
+    protected $fillable=['title','description', 'category_id'];
 
     protected $appends=['permission'];
 
     protected static function booted(){
         static::creating(function($course){
-            $course->user_id=auth()->user()->id;
+            if (auth()->check()) {
+                $course->user_id = auth()->id();
+            }
         });
     }
 
@@ -30,5 +32,9 @@ class Course extends Model
 
     public function user(){
         return $this->belongsTo(User::class);
+    }
+
+    public function category(){
+        return $this->belongsTo(Category::class);
     }
 }

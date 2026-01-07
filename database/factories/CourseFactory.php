@@ -21,8 +21,8 @@ class CourseFactory extends Factory
         return [
             'title'=>$this->faker->sentence(),
             'description'=>$this->faker->paragraph(3,true),
-            'user_id' =>User::all()->random()->id,
-
+            'user_id' =>User::factory()->create()->id,
+            'category_id' => \App\Models\Category::factory()->create()->id,
         ];
     }
 }
