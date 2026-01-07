@@ -78,11 +78,6 @@ Licence
 
 ---
 
-Si vous voulez, je peux :
-- ajouter des captures d'écran dans le README,
-- documenter les endpoints API en détail,
-- préparer un script d'installation automatique.
-
 ---
 
 **Copyright**: © yaataldigital 2026
