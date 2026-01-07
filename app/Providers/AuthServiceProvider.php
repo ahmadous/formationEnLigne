@@ -14,7 +14,9 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        'App\Models\Course'=>'App\Policies\coursePolicy',
+        'App\Models\Course' => 'App\Policies\coursePolicy',
+        'App\Models\Episode' => 'App\Policies\EpisodePolicy',
+        'App\Models\Discussion' => 'App\Policies\DiscussionPolicy',
     ];
 
     /**
@@ -24,6 +26,10 @@ class AuthServiceProvider extends ServiceProvider
     {
         Gate::define('update-course',function($course){
             return $course->user_id==auth()->user()->id;
+        });
+        
+        Gate::define('manage-reports', function($user) {
+            return $user->hasRole('admin');
         });
     }
 }

@@ -2,7 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     courses: {
         type: Array,
         required: true,
@@ -16,11 +16,11 @@ const deleteCourse = (id) => {
 };
 
 const totalStats = () => {
-    if (!Array.isArray(courses)) return { courses: 0, episodes: 0, participants: 0 };
+    if (!Array.isArray(props.courses)) return { courses: 0, episodes: 0, participants: 0 };
     return {
-        courses: courses.length,
-        episodes: courses.reduce((sum, c) => sum + (c.episodes_count || 0), 0),
-        participants: courses.reduce((sum, c) => sum + (c.participants || 0), 0),
+        courses: props.courses.length,
+        episodes: props.courses.reduce((sum, c) => sum + (c.episodes_count || 0), 0),
+        participants: props.courses.reduce((sum, c) => sum + (c.participants || 0), 0),
     };
 };
 </script>
@@ -41,7 +41,7 @@ const totalStats = () => {
 
         <div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Stats Card -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6" v-if="courses && courses.length > 0">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6" v-if="props.courses && props.courses.length > 0">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="text-sm text-gray-500">Total formations</div>
                     <div class="mt-3 text-3xl font-bold text-gray-900">{{ totalStats().courses }}</div>
@@ -57,8 +57,8 @@ const totalStats = () => {
             </div>
 
             <!-- Courses Grid -->
-            <div v-if="courses && courses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div v-for="course in courses" :key="course.id" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+            <div v-if="props.courses && props.courses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div v-for="course in props.courses" :key="course.id" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
                     <!-- Course Header -->
                     <div class="p-6 border-b border-gray-100">
                         <Link :href="route('courses.show', course.id)" class="block group">

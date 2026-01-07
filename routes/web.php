@@ -4,6 +4,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DiscussionController;
 use App\Models\Category;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -40,12 +42,21 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
-        $user = auth()->user()->load('course');
+        $user = auth()->user()->load('course', 'episodes', 'roles');
+
+        // Calculate enrolled courses (courses user has followed episodes from)
+        $enrolledCoursesIds = $user->episodes()
+            ->select('episodes.course_id')
+            ->distinct()
+            ->pluck('course_id')
+            ->toArray();
 
         $stats = [
             'my_courses' => $user->course->count(),
             'is_instructor' => $user->hasRole('instructor'),
-            'enrolled_courses' => 0,
+            'is_admin' => $user->hasRole('admin'),
+            'enrolled_courses' => count($enrolledCoursesIds),
+            'role_names' => $user->role_names,
         ];
 
         $myCourses = $user->course()->latest()->take(6)->get(['id', 'title', 'created_at']);
@@ -69,9 +80,15 @@ Route::middleware([
         Route::patch('/courses/{id}',[CourseController::class,'update'])->name('courses.update');
         Route::post('/courses',[CourseController::class,'store'])->name('courses.store');
         Route::post('/episodes',[CourseController::class,'storeEpisode'])->name('episodes.store');
+        Route::delete('/episodes/{id}',[CourseController::class,'deleteEpisode'])->name('episodes.delete');
+        Route::patch('/episodes/{id}/status',[CourseController::class,'updateEpisodeStatus'])->name('episodes.status');
+        Route::post('/courses/{id}/toggle-publish',[CourseController::class,'togglePublish'])->name('courses.toggle-publish');
         // Quick create (from dashboard)
         Route::post('/courses/quick',[CourseController::class,'storeQuick'])->name('courses.quick');
     });
+    
+    // Reporting routes - accessible à tous les utilisateurs authentifiés
+    Route::post('/episodes/{id}/report', [ReportController::class, 'reportEpisode'])->name('episodes.report');
     
     // Progress tracking - accessible à tous les utilisateurs authentifiés
     Route::post('/toggleProgress',[CourseController::class,'toggleProgress'])->name('courses.toggle');
@@ -99,6 +116,27 @@ Route::middleware([
     // User role management routes
     Route::post('/users/assign-role', [AdminController::class, 'assignRole'])->name('admin.users.assign-role');
     Route::post('/users/remove-role', [AdminController::class, 'removeRole'])->name('admin.users.remove-role');
+    
+    // Reports management routes
+    Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports');
+    Route::get('/reports/all', [ReportController::class, 'allReports'])->name('admin.reports.all');
+    Route::patch('/reports/{id}', [ReportController::class, 'updateReport'])->name('admin.reports.update');
+});
+
+// Discussion routes (authenticated)
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
+    Route::get('/episodes/{episode}/discussions', [DiscussionController::class, 'index'])->name('discussions.index');
+    Route::post('/discussions', [DiscussionController::class, 'store'])->name('discussions.store');
+    Route::patch('/discussions/{discussion}', [DiscussionController::class, 'update'])->name('discussions.update');
+    Route::delete('/discussions/{discussion}', [DiscussionController::class, 'destroy'])->name('discussions.destroy');
+    Route::patch('/discussions/{discussion}/toggle-solved', [DiscussionController::class, 'toggleSolved'])->name('discussions.toggleSolved');
+    Route::post('/discussions/{discussion}/reply', [DiscussionController::class, 'reply'])->name('discussions.reply');
+    Route::patch('/discussion-replies/{reply}/helpful', [DiscussionController::class, 'toggleHelpful'])->name('discussions.toggleHelpful');
+    Route::patch('/discussion-replies/{reply}/mark-answer', [DiscussionController::class, 'markAsAnswer'])->name('discussions.markAsAnswer');
 });
 
 // File upload routes (authenticated)

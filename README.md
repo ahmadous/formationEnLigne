@@ -1,12 +1,98 @@
-<p align="center" style="color:rgb(10,200,30);font-size:100px;">Laravel-Inertia et Tailwind Css</p><svg align="center" class="block fill-current text-white" viewBox="0 0 275.3 50.5" style="height: 25px;"><path d="M231.2 16.1h-17.8l17.2 17.2-17.2 17.2h17.8l17.2-17.2z"></path><path d="M258.1 16.1h-17.8l17.2 17.2-17.2 17.2h17.8l17.2-17.2z"></path><path d="M6 15.3h10.3l-6 34.2H0l6-34.2zm.6-9.1C7.2 2.9 10.3 0 13.7 0s5.7 2.8 5.2 6.2c-.5 3.4-3.7 6.2-7.2 6.2s-5.6-3-5.1-6.2zM54.3 28.5l-3.7 21H40.4L43.8 30c.8-4.4-1.6-6.2-4.9-6.2-3.4 0-6.5 2-7.5 6.6L28 49.5H17.8l6-34.2h10.3l-.5 3.2c2.3-2.6 6.2-4.2 10.1-4.2 6.9.1 12.2 5.1 10.6 14.2zM94.5 32.4c-.1.8-.5 2.7-1.1 4.1H68.9c.6 3.8 3.8 4.8 7 4.8 2.9 0 5.2-.8 7.2-2.7l7.2 5.9c-4 4-8.7 6-15 6-11.8 0-18-8.5-16.3-18.7a20.7 20.7 0 0 1 20.5-17.4c9.8 0 16.9 7.6 15 18zm-9.7-3.7c-.3-3.8-3-5.3-6.2-5.3a8.9 8.9 0 0 0-8.3 5.3h14.5zM123.9 14.6l-2 11.6c-4-.6-10.5.8-11.7 7.8l.1-.4-2.8 15.9H97.3l6-34.2h10.3l-1.1 6.2c2.1-4.7 6.6-6.9 11.4-6.9zM137.8 37.3c-.5 3.1 2 3.3 6.6 2.9l-1.6 9.3c-12.3 1.4-16.9-2.7-15.2-12.2l2.1-12.1h-5.5l1.8-9.9h5.4l1.2-6.5 10.8-3.1-1.7 9.6h7.1l-1.8 9.9h-7l-2.2 12.1zM155.3 15.3h10.3l-6 34.2h-10.3l6-34.2zm.6-9.1c.5-3.3 3.7-6.2 7.1-6.2s5.7 2.8 5.2 6.2c-.5 3.4-3.7 6.2-7.2 6.2s-5.7-3-5.1-6.2zM208.1 15.3l-6 34.2h-10.3l.4-2.3a15.5 15.5 0 0 1-10.3 3.3c-11.1 0-15.3-9.6-13.5-18.9 1.6-8.8 8.6-17.2 19.2-17.2 4.5 0 7.7 1.8 9.6 4.6l.6-3.6h10.3zm-13.2 17.2c.9-5.2-1.9-8.4-6.6-8.4a9.5 9.5 0 0 0-9.5 8.3c-.9 5.1 1.8 8.3 6.6 8.3 4.6.1 8.6-3.1 9.5-8.2z"></path></svg>
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
-##pourquoi inertia
+#![formationEnLigne]
 
+# formationEnLigne — Plateforme LMS centrée sur les épisodes (vidéos)
+
+Description
+- Objectif : une plateforme d'apprentissage où la vidéo (Episode) est l'unité centrale. Les instructeurs créent des `Course` composées d'`Episode` (vidéos). Chaque épisode peut avoir des discussions, des assignments, des soumissions et une notation.
+
+Stack technique
+- Backend : Laravel 11 (PHP 8.4)
+- Frontend : Vue 3 + Inertia.js
+- Base de données : SQLite (développement)
+- Auth : Laravel Sanctum + Jetstream
+
+Fonctionnalités principales
+- **Rôles** : `admin`, `instructor`, `student`.
+- **Gestion des cours** : création, publication, modification par les instructeurs.
+- **Episode-centric** : l'épisode (vidéo) est l'unité pédagogique principale.
+- **Discussions** : forum Q&A par épisode avec réponses et marquage de solution.
+- **Assignments & Submissions** : travaux, soumissions et notation (`Grade`).
+- **Progression** : suivi `Progress` et complétion d'épisodes.
+- **Reporting** : modération des épisodes via `reported_episodes`.
+
+Architecture (résumé)
+- Models clés : `Course`, `Episode`, `Discussion`, `DiscussionReply`, `Assignment`, `Submission`, `Grade`, `Progress`, `ReportedEpisode`.
+- Policies & Gates : `CoursePolicy`, `EpisodePolicy`, `DiscussionPolicy`, gate `manage-reports`.
+- Middleware : `CheckRole` (supporte rôles combinés, ex. `instructor|admin`).
+- Frontend : pages Vue sous `resources/js/Pages/Courses/` (ex. `my-courses.vue`, `show.vue`, `DiscussionForum.vue`).
+
+Installation locale (rapide)
+1. Cloner le repo
+	- `git clone <repo>`
+2. Installer dépendances PHP
+	- `composer install`
+3. Copier l'environnement et générer la clé
+	- `cp .env.example .env`
+	- `php artisan key:generate`
+4. Configurer la base de données (par défaut SQLite dans `.env`)
+	- `touch database/database.sqlite`
+	- mettre `DB_CONNECTION=sqlite` dans `.env`
+5. Lancer les migrations et seeders
+	- `php artisan migrate --seed`
+6. Installer dépendances JS et compiler
+	- `npm install`
+	- `npm run dev`    # développement (watch)
+	- `npm run build`  # production
+7. Lancer le serveur
+	- `php artisan serve`
+
+Tests
+- Lancer la suite de tests : `./vendor/bin/phpunit` ou `php artisan test`.
+
+Usage rapide
+- Dashboard : `/dashboard`
+- Mes formations (instructor) : `/my-courses`
+- Créer une formation : `/courses/create`
+- Voir une formation (lecteur + discussions) : `/courses/{id}`
+
+Développement Frontend
+- Les composants Vue se trouvent sous `resources/js/Pages/`.
+- Pour recompiler en développement : `npm run dev`.
+
+Fichiers importants
+- `app/Models/Episode.php` — relations : `discussions()`, `assignments()`, `completedBy()`.
+- `app/Http/Controllers/CourseController.php` — gestion des cours et épisodes.
+- `resources/js/Pages/Courses/show.vue` — lecteur vidéo + intégration discussions.
+- `resources/js/Pages/Courses/DiscussionForum.vue` — composant d'exemple pour discussions.
+
+Notes
+- La plateforme a été réorientée pour placer l'épisode comme unité pédagogique. Les migrations et modèles pour discussions, assignments, submissions, grades et progression ont été ajoutés.
+- Frontend : recompilation nécessaire après modifications (`npm run dev`).
+
+Contribution
+- Ouvrez des issues pour bugs/feature requests.
+- Utilisez des branches `feature/*` ou `fix/*` et proposez des PRs avec descriptions claires.
+
+Licence
+- Voir le fichier `LICENSE`.
+
+---
+
+Si vous voulez, je peux :
+- ajouter des captures d'écran dans le README,
+- documenter les endpoints API en détail,
+- préparer un script d'installation automatique.
+
+---
+
+**Copyright**: © yaataldigital 2026
+
+<details>
+<summary>Section cachée</summary>
+
+Informations internes : contenu et propriété intellectuelle détenus par yaataldigital. Ne pas supprimer ni modifier sans accord explicite.
+
+</details>
 
 Si les développeurs Laravel devaient construire des SPA web avec Vue avant Inertia, ils devaient configurer des API et renvoyer des données JSON avec Laravel, puis utiliser quelque chose comme AXIOS pour récupérer les données dans les composants Vue. Ils auraient également besoin de quelque chose comme Vue Router pour gérer les routes, ce qui signifierait perdre le routage Laravel, ainsi que les middlewares et les contrôleurs.
 

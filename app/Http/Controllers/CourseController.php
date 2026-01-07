@@ -45,6 +45,7 @@ class CourseController extends Controller
     
     public function create()
     {
+        $this->authorize('create', Course::class);
         $categories = Category::all();
         return Inertia::render('Courses/create', ['categories' => $categories]);
     }
@@ -112,6 +113,7 @@ class CourseController extends Controller
         return to_route('courses.index')->with('message','Felicitation la formation a bien ete  modifier');
     }
     public function store(Request $request){
+        $this->authorize('create', Course::class);
         $request->validate([
             'title'=>'required',
             'description'=>'required',
@@ -147,6 +149,7 @@ class CourseController extends Controller
      */
     public function storeQuick(Request $request)
     {
+        $this->authorize('create', Course::class);
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -166,4 +169,57 @@ class CourseController extends Controller
             'edit_url' => route('courses.edit', $course->id),
         ], 201);
     }
+
+    /**
+     * Delete an episode.
+     */
+    public function deleteEpisode(int $id)
+    {
+        $episode = Episode::findOrFail($id);
+        $course = $episode->course;
+        
+        $this->authorize('delete', $episode);
+        
+        $episode->delete();
+        
+        return to_route('courses.edit', $course->id)->with('message', 'Épisode supprimé avec succès');
+    }
+
+    /**
+     * Toggle course publication status.
+     */
+    public function togglePublish(Request $request, int $id)
+    {
+        $course = Course::findOrFail($id);
+        $this->authorize('update', $course);
+        
+        $course->update(['is_published' => !$course->is_published]);
+        
+        return to_route('courses.my')->with(
+            'message',
+            $course->is_published ? 'Formation publiée avec succès' : 'Formation masquée avec succès'
+        );
+    }
+
+    /**
+     * Pause or resume an episode (instructor or admin).
+     */
+    public function updateEpisodeStatus(Request $request, int $id)
+    {
+        $episode = Episode::findOrFail($id);
+        $this->authorize('manageStatus', $episode);
+        
+        $request->validate([
+            'status' => 'required|in:active,paused,blocked',
+            'reason' => 'required_if:status,blocked',
+        ]);
+        
+        $episode->update([
+            'status' => $request->status,
+            'block_reason' => $request->reason ?? null,
+        ]);
+        
+        return to_route('courses.edit', $episode->course_id)->with('message', 'Statut de l\'épisode mis à jour');
+    }
 }
+

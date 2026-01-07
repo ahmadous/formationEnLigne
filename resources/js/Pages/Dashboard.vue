@@ -61,9 +61,11 @@ const submitQuick = () => {
                     <p class="text-sm text-gray-500 mt-1">Bienvenue sur votre espace personnel</p>
                 </div>
                 <div class="flex items-center gap-3">
+                    <Link v-if="stats.is_admin" href="/admin/dashboard" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">👑 Admin</Link>
                     <button v-if="stats.is_instructor" @click="showQuickModal = true" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Ajouter un cours</button>
                     <Link v-if="stats.is_instructor" href="/courses/create" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Créer une formation</Link>
                     <Link href="/my-courses" class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">Mes formations</Link>
+                    <Link href="/courses" class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">Découvrir</Link>
                 </div>
             </div>
         </template>
@@ -71,7 +73,7 @@ const submitQuick = () => {
         <div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="text-sm text-gray-500">Mes cours</div>
+                    <div class="text-sm text-gray-500">Mes cours créés</div>
                     <div class="mt-3 text-2xl font-bold text-gray-900">{{ stats.my_courses }}</div>
                     <p class="text-xs text-gray-400 mt-2">Formations que vous avez créées</p>
                 </div>
@@ -79,12 +81,16 @@ const submitQuick = () => {
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="text-sm text-gray-500">Cours suivis</div>
                     <div class="mt-3 text-2xl font-bold text-gray-900">{{ stats.enrolled_courses }}</div>
-                    <p class="text-xs text-gray-400 mt-2">Cours où vous êtes inscrit</p>
+                    <p class="text-xs text-gray-400 mt-2">Formations où vous êtes inscrit</p>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="text-sm text-gray-500">Rôle</div>
-                    <div class="mt-3 text-2xl font-bold text-gray-900">{{ stats.is_instructor ? 'Instructeur' : 'Étudiant' }}</div>
+                    <div class="text-sm text-gray-500">Rôle(s)</div>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <span v-for="role in stats.role_names" :key="role" class="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full">
+                            {{ role === 'instructor' ? '👨‍🏫 Instructeur' : role === 'admin' ? '👑 Admin' : '👤 Étudiant' }}
+                        </span>
+                    </div>
                     <p class="text-xs text-gray-400 mt-2">Accès et actions rapides</p>
                 </div>
             </div>

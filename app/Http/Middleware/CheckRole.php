@@ -19,7 +19,18 @@ class CheckRole
             return redirect()->route('login');
         }
 
-        if (!$request->user()->hasRole($role)) {
+        // Support for multiple roles separated by '|' (e.g., 'instructor|admin')
+        $roles = explode('|', $role);
+        $hasRole = false;
+
+        foreach ($roles as $r) {
+            if ($request->user()->hasRole(trim($r))) {
+                $hasRole = true;
+                break;
+            }
+        }
+
+        if (!$hasRole) {
             // Redirect based on user's roles or to dashboard
             if ($request->user()->roles->isNotEmpty()) {
                 return redirect()->route('dashboard')->with('error', 'Vous n\'avez pas accès à cette ressource.');

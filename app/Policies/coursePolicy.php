@@ -29,7 +29,7 @@ class coursePolicy
      */
     public function create(User $user)
     {
-        //
+        return $user->hasRole('instructor');
     }
 
     /**
@@ -45,7 +45,7 @@ class coursePolicy
      */
     public function delete(User $user, Course $course)
     {
-        //
+        return $user->id == $course->user_id || $user->hasRole('admin');
     }
 
     /**
@@ -53,7 +53,7 @@ class coursePolicy
      */
     public function restore(User $user, Course $course)
     {
-        //
+        return $user->id == $course->user_id || $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +61,14 @@ class coursePolicy
      */
     public function forceDelete(User $user, Course $course)
     {
-        //
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Determine whether the user can manage (pause/block) episodes.
+     */
+    public function manageEpisodes(User $user, Course $course)
+    {
+        return $user->id == $course->user_id || $user->hasRole('admin');
     }
 }

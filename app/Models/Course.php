@@ -10,7 +10,7 @@ class Course extends Model
 {
     use HasFactory;
 
-    protected $fillable=['title','description', 'category_id'];
+    protected $fillable=['title','description', 'category_id', 'is_published'];
 
     protected $appends=['permission'];
 
@@ -36,5 +36,37 @@ class Course extends Model
 
     public function category(){
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get all discussions in this course.
+     */
+    public function discussions()
+    {
+        return $this->hasMany(Discussion::class);
+    }
+
+    /**
+     * Get all assignments in this course.
+     */
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class);
+    }
+
+    /**
+     * Get the progress tracker for students in this course.
+     */
+    public function progress()
+    {
+        return $this->hasMany(Progress::class);
+    }
+
+    /**
+     * Get enrolled students.
+     */
+    public function enrolledStudents()
+    {
+        return $this->belongsToMany(User::class, 'progress', 'course_id', 'user_id');
     }
 }

@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
+
+const page = usePage();
 
 const props = defineProps({
     type: {
@@ -44,6 +46,18 @@ const handleFileSelect = async (event) => {
         return;
     }
 
+    // Validate file type for videos
+    if (props.type === 'video') {
+        const validVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
+        const validExtensions = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv'];
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        
+        if (!validVideoTypes.includes(file.type) && !validExtensions.includes(fileExt)) {
+            error.value = 'Invalid video format. Allowed: MP4, MOV, AVI, WebM, MKV, FLV, WMV';
+            return;
+        }
+    }
+
     // Create preview for images
     if (props.type === 'image') {
         const reader = new FileReader();
@@ -63,25 +77,62 @@ const handleFileSelect = async (event) => {
     form.append('type', props.type);
 
     try {
+        // Get CSRF token from meta tag
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        
+        if (!csrfToken) {
+            throw new Error('CSRF token not found. Please refresh the page.');
+        }
+
+        console.log('Uploading file:', {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            csrfToken: csrfToken ? 'present' : 'missing'
+        });
+        
         const response = await fetch(route('upload'), {
             method: 'POST',
             body: form,
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
             },
+            credentials: 'same-origin',
         });
 
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('Non-JSON response:', text.substring(0, 200));
+            throw new Error(`Expected JSON but got ${response.status}. Server error: ${response.statusText}`);
+        }
+
         const data = await response.json();
+        console.log('Upload response:', data);
+
+        if (!response.ok) {
+            throw new Error(data.message || `Upload failed with status ${response.status}`);
+        }
 
         if (data.success) {
             emit('update:modelValue', data.path);
             emit('uploaded', data);
+            error.value = null;
         } else {
             error.value = data.message || 'Upload failed';
         }
     } catch (err) {
-        error.value = 'An error occurred during upload';
-        console.error('Upload error:', err);
+        error.value = err.message || 'An error occurred during upload';
+        console.error('Upload error:', {
+            message: err.message,
+            stack: err.stack,
+            file: file.name
+        });
     } finally {
         uploading.value = false;
     }
